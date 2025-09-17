@@ -5,18 +5,35 @@ import java.util.Random;
 
 public class Grid {
   Cell[][] cells = new Cell[20][20];
-  
+  Item squareItem;
+  Item circleItem;
+  Item triangleItem;
+
   public Grid() {
     Random rand = new Random();
     for(int i=0; i<cells.length; i++) {
       for(int j=0; j<cells[i].length; j++) {
         cells[i][j] = new Cell(colToLabel(i), j, 10+Cell.size*i, 10+Cell.size*j);
-        
-        // randomly assign environement
         int randomEnv = rand.nextInt(3); 
         cells[i][j].setEnvironment(randomEnv);
       }
     }
+
+    // randomly place item
+    int x1 = rand.nextInt(20);
+    int y1 = rand.nextInt(20);
+    int x2, y2, x3, y3;
+    do {
+      x2 = rand.nextInt(20);
+      y2 = rand.nextInt(20);
+    } while (x2 == x1 && y2 == y1);
+    do {
+      x3 = rand.nextInt(20);
+      y3 = rand.nextInt(20);
+    } while ((x3 == x1 && y3 == y1) || (x3 == x2 && y3 == y2));
+    squareItem = new Item(0, x1, y1);
+    circleItem = new Item(1, x2, y2);
+    triangleItem = new Item(2, x3, y3);
   }
 
   private char colToLabel(int col) {
@@ -32,6 +49,23 @@ public class Grid {
       for(int j=0; j<cells[i].length; j++) {
         cells[i][j].paint(g, mousePos);
       }
+    }
+
+    // draw items
+    if (squareItem != null) {
+      int cx = 10 + Cell.size * squareItem.getX();
+      int cy = 10 + Cell.size * squareItem.getY();
+      squareItem.paint(g, cx, cy, Cell.size);
+    }
+    if (circleItem != null) {
+      int cx = 10 + Cell.size * circleItem.getX();
+      int cy = 10 + Cell.size * circleItem.getY();
+      circleItem.paint(g, cx, cy, Cell.size);
+    }
+    if (triangleItem != null) {
+      int cx = 10 + Cell.size * triangleItem.getX();
+      int cy = 10 + Cell.size * triangleItem.getY();
+      triangleItem.paint(g, cx, cy, Cell.size);
     }
   }
 
