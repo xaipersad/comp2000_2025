@@ -7,7 +7,7 @@ public class Cell extends Rectangle {
   static int size = 35;
   char col;
   int row;
-  int environment = 0; // environment type: 0 = normal, 1 = water, 2 = mountain
+  int environment = 0; // environment type: 0 = grass, 1 = water, 2 = mountain
 
   public Cell(char inCol, int inRow, int x, int y) {
     super(x, y, size, size);
@@ -30,11 +30,11 @@ public class Cell extends Rectangle {
     // set color based on environment
     Color cellColor;
     if (environment == 1) {
-      cellColor = Color.blue; // water
+      cellColor = new Color(0,100,150); // water
     } else if (environment == 2) {
       cellColor = Color.darkGray; // mountain
     } else {
-      cellColor = Color.white; // normal
+      cellColor = new Color(0,100,0); // grass
     }
 
     if (contains(mousePos)) {

@@ -1,4 +1,4 @@
-add movement to actor
-add items
-add environmental effects on characters
+DONE ---- add movement to actor
+DONE ---- add items
+DONE -- add environmental effects on characters
 create score for items collected
