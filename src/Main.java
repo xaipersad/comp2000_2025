@@ -10,16 +10,27 @@ public class Main extends JFrame {
       window.run();
     }
 
-    class Canvas extends JPanel {
+    class Canvas extends JPanel implements java.awt.event.MouseListener {
       Stage stage = new Stage();
       public Canvas() {
         setPreferredSize(new Dimension(1024, 720));
+        addMouseListener(this);
       }
 
       @Override
       public void paint(Graphics g) {
         stage.paint(g, getMousePosition());
       }
+
+      @Override
+      public void mouseClicked(java.awt.event.MouseEvent e) {
+        stage.handleClick(e.getPoint());
+        repaint();
+      }
+      @Override public void mousePressed(java.awt.event.MouseEvent e) {}
+      @Override public void mouseReleased(java.awt.event.MouseEvent e) {}
+      @Override public void mouseEntered(java.awt.event.MouseEvent e) {}
+      @Override public void mouseExited(java.awt.event.MouseEvent e) {}
     }
 
     private Main() {
