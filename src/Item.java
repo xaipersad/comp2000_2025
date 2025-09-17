@@ -2,7 +2,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 
 public class Item {
-    // 0 = square, 1 = circle, 2 = triangle
+    
     int type;
     int x, y; 
 
@@ -13,13 +13,19 @@ public class Item {
     }
 
     public void paint(Graphics g, int cellX, int cellY, int cellSize) {
+         // square
         if (type == 0) {
             g.setColor(Color.red);
             g.fillRect(cellX + 8, cellY + 8, cellSize - 16, cellSize - 16);
-        } else if (type == 1) {
+        } 
+        //circle
+        else if (type == 1) {
             g.setColor(Color.green);
             g.fillOval(cellX + 8, cellY + 8, cellSize - 16, cellSize - 16);
-        } else if (type == 2) {
+        } 
+        
+        //triangle
+        else if (type == 2) {
             g.setColor(Color.orange);
             int[] xPoints = {cellX + cellSize / 2, cellX + 10, cellX + cellSize - 10};
             int[] yPoints = {cellY + 10, cellY + cellSize - 10, cellY + cellSize - 10};

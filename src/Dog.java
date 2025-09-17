@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class Dog extends Actor {
   public Dog(Cell inLoc) {
-    color = Color.YELLOW;
+    color = Color.green;
     setLocation(inLoc);
   }
 

@@ -82,6 +82,80 @@ public class Stage {
         dog.setLocation(cell);
         showDogMoves = false;
         dogMoveOptions.clear();
+
+        // move actors toward their items
+        // cat -> square bird -> triangle
+        for (int i = 0; i < actors.size(); i++) {
+          Actor a = actors.get(i);
+          if (a != dog) {
+            int targetX = -1, targetY = -1;
+            if (a instanceof Cat) {
+              targetX = grid.squareItem.getX();
+              targetY = grid.squareItem.getY();
+            } else if (a instanceof Bird) {
+              targetX = grid.triangleItem.getX();
+              targetY = grid.triangleItem.getY();
+            } else {
+              continue;
+            }
+            int ax = a.loc.x / Cell.size;
+            int ay = a.loc.y / Cell.size;
+            int dx = Integer.compare(targetX, ax);
+            int dy = Integer.compare(targetY, ay);
+            int newX = ax + dx;
+            int newY = ay + dy;
+            if (newX >= 0 && newX < 20 && newY >= 0 && newY < 20) {
+              Optional<Cell> nextCell = grid.cellAtColRow(newX, newY);
+              if (nextCell.isPresent()) {
+                try {
+                  a.getClass().getMethod("setLocation", Cell.class).invoke(a, nextCell.get());
+                } catch (Exception ex) {
+                  a.loc = nextCell.get();
+                  // update actor on grid
+                  if (a instanceof Cat) {
+                    ((Cat)a).display = new java.util.ArrayList<>();
+                    Cell l = a.loc;
+                    java.awt.Polygon ear1 = new java.awt.Polygon();
+                    ear1.addPoint(l.x + 11, l.y + 5);
+                    ear1.addPoint(l.x + 15, l.y + 15);
+                    ear1.addPoint(l.x + 7, l.y + 15);
+                    java.awt.Polygon ear2 = new java.awt.Polygon();
+                    ear2.addPoint(l.x + 22, l.y + 5);
+                    ear2.addPoint(l.x + 26, l.y + 15);
+                    ear2.addPoint(l.x + 18, l.y + 15);
+                    java.awt.Polygon face = new java.awt.Polygon();
+                    face.addPoint(l.x + 5, l.y + 15);
+                    face.addPoint(l.x + 29, l.y + 15);
+                    face.addPoint(l.x + 17, l.y + 30);
+                    ((Cat)a).display.add(face);
+                    ((Cat)a).display.add(ear1);
+                    ((Cat)a).display.add(ear2);
+                  } 
+                  else if (a instanceof Bird) {
+                    ((Bird)a).display = new java.util.ArrayList<>();
+                    Cell l = a.loc;
+                    java.awt.Polygon wing1 = new java.awt.Polygon();
+                    wing1.addPoint(l.x + 5, l.y + 5);
+                    wing1.addPoint(l.x + 15, l.y + 17);
+                    wing1.addPoint(l.x + 5, l.y + 17);
+                    java.awt.Polygon wing2 = new java.awt.Polygon();
+                    wing2.addPoint(l.x + 30, l.y + 5);
+                    wing2.addPoint(l.x + 20, l.y + 17);
+                    wing2.addPoint(l.x + 30, l.y + 17);
+                    java.awt.Polygon body = new java.awt.Polygon();
+                    body.addPoint(l.x + 15, l.y + 10);
+                    body.addPoint(l.x + 20, l.y + 10);
+                    body.addPoint(l.x + 20, l.y + 25);
+                    body.addPoint(l.x + 15, l.y + 25);
+                    ((Bird)a).display.add(body);
+                    ((Bird)a).display.add(wing1);
+                    ((Bird)a).display.add(wing2);
+                  }
+                }
+              }
+            }
+          }
+        }
       } else {
         showDogMoves = false;
         dogMoveOptions.clear();
