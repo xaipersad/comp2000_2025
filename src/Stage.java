@@ -12,6 +12,9 @@ public class Stage {
   Dog dog;
   boolean showDogMoves = false;
   List<Cell> dogMoveOptions = new ArrayList<>();
+  int dogScore = 0;
+  int catScore = 0;
+  int birdScore = 0;
 
   public Stage() {
     grid = new Grid();
@@ -54,6 +57,23 @@ public class Stage {
       Cell hoverCell = underMouse.get();
       g.setColor(Color.DARK_GRAY);
       g.drawString(String.valueOf(hoverCell.col) + String.valueOf(hoverCell.row), 740, 30);
+    }
+    // scoreboard
+    int scoreY = 60;
+    g.setColor(Color.BLACK);
+    g.drawString("Scoreboard:", 740, scoreY);
+    scoreY += 20;
+    for (int i = 0; i < actors.size(); i++) {
+      Actor a = actors.get(i);
+      String name = "Actor";
+      int score = 0;
+      if (a.getClass().getSimpleName().equals("Dog")) { name = "Dog"; score = dogScore; }
+      else if (a.getClass().getSimpleName().equals("Cat")) { name = "Cat"; score = catScore; }
+      else if (a.getClass().getSimpleName().equals("Bird")) { name = "Bird"; score = birdScore; }
+      int gridX = a.loc.x / Cell.size;
+      int gridY = a.loc.y / Cell.size;
+      g.drawString(name + ": (" + gridX + ", " + gridY + ")  Score: " + score, 740, scoreY);
+      scoreY += 20;
     }
   }
 
@@ -188,6 +208,61 @@ public class Stage {
                 ((Bird)a).display.add(wing2);
               }
             }
+          }
+        }
+        // check for item collect then respawn
+        // dog
+        if (dog.loc.x / Cell.size == grid.circleItem.getX() && dog.loc.y / Cell.size == grid.circleItem.getY()) {
+          dogScore++;
+          java.util.Random rand = new java.util.Random();
+          int newX, newY;
+          do {
+            newX = rand.nextInt(20);
+            newY = rand.nextInt(20);
+          } while ((newX == dog.loc.x / Cell.size && newY == dog.loc.y / Cell.size));
+          grid.circleItem.x = newX;
+          grid.circleItem.y = newY;
+        }
+        // cat 
+        for (int i = 0; i < actors.size(); i++) {
+          Actor a = actors.get(i);
+          if (a.getClass().getSimpleName().equals("Cat")) {
+            if (a.loc.x / Cell.size == grid.squareItem.getX() && a.loc.y / Cell.size == grid.squareItem.getY()) {
+              catScore++;
+              java.util.Random rand = new java.util.Random();
+              int newX, newY;
+              do {
+                newX = rand.nextInt(20);
+                newY = rand.nextInt(20);
+              } while ((newX == a.loc.x / Cell.size && newY == a.loc.y / Cell.size));
+              grid.squareItem.x = newX;
+              grid.squareItem.y = newY;
+            }
+          }
+          //bird
+          if (a.getClass().getSimpleName().equals("Bird")) {
+            if (a.loc.x / Cell.size == grid.triangleItem.getX() && a.loc.y / Cell.size == grid.triangleItem.getY()) {
+              birdScore++;
+              java.util.Random rand = new java.util.Random();
+              int newX, newY;
+              do {
+                newX = rand.nextInt(20);
+                newY = rand.nextInt(20);
+              } while ((newX == a.loc.x / Cell.size && newY == a.loc.y / Cell.size));
+              grid.triangleItem.x = newX;
+              grid.triangleItem.y = newY;
+            }
+          }
+        }
+        // deduct score if on lava
+        for (int i = 0; i < actors.size(); i++) {
+          Actor a = actors.get(i);
+          if (a.getClass().getSimpleName().equals("Dog")) {
+            if (a.loc.getEnvironment() == 2 && dogScore > 0) dogScore--;
+          } else if (a.getClass().getSimpleName().equals("Cat")) {
+            if (a.loc.getEnvironment() == 2 && catScore > 0) catScore--;
+          } else if (a.getClass().getSimpleName().equals("Bird")) {
+            if (a.loc.getEnvironment() == 2 && birdScore > 0) birdScore--;
           }
         }
       } else {
