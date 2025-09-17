@@ -41,12 +41,10 @@ public class Stage {
     grid.paint(g, mouseLoc);
     // shows dog moves
     if (showDogMoves && dogMoveOptions != null) {
-      g.setColor(Color.LIGHT_GRAY);
-      for (Cell c : dogMoveOptions) {
-        g.fillRect(c.x, c.y, Cell.size, Cell.size);
-        g.setColor(Color.BLACK);
+      for (int i = 0; i < dogMoveOptions.size(); i++) {
+        Cell c = dogMoveOptions.get(i);
+        g.setColor(Color.WHITE);
         g.drawRect(c.x, c.y, Cell.size, Cell.size);
-        g.setColor(Color.LIGHT_GRAY);
       }
     }
     for(Actor a: actors) {
@@ -87,9 +85,9 @@ public class Stage {
         dogMoveOptions.clear();
         int nx = cell.x / Cell.size;
         int ny = cell.y / Cell.size;
-        int dogSteps = 2;
-        if (cell.getEnvironment() == 1) dogSteps = 1;
-        if (cell.getEnvironment() == 2) dogSteps = 3;
+        int dogSteps = 3;
+        if (cell.getEnvironment() == 1) dogSteps = 2;
+        if (cell.getEnvironment() == 2) dogSteps = 1;
         for (int dx = -dogSteps; dx <= dogSteps; dx++) {
           for (int dy = -dogSteps; dy <= dogSteps; dy++) {
             if (dx == 0 && dy == 0) continue;
@@ -117,9 +115,9 @@ public class Stage {
               int targetY = grid.squareItem.getY();
               int ax = a.loc.x / Cell.size;
               int ay = a.loc.y / Cell.size;
-              int catSteps = 2;
-              if (a.loc.getEnvironment() == 1) catSteps = 1;
-              if (a.loc.getEnvironment() == 2) catSteps = 3;
+              int catSteps = 3;
+              if (a.loc.getEnvironment() == 1) catSteps = 2;
+              if (a.loc.getEnvironment() == 2) catSteps = 1;
               int bestDist = 1000;
               Cell bestCell = a.loc;
               for (int dx = -catSteps; dx <= catSteps; dx++) {
@@ -164,9 +162,9 @@ public class Stage {
               int targetY = grid.triangleItem.getY();
               int ax = a.loc.x / Cell.size;
               int ay = a.loc.y / Cell.size;
-              int birdSteps = 2;
-              if (a.loc.getEnvironment() == 1) birdSteps = 1;
-              if (a.loc.getEnvironment() == 2) birdSteps = 3;
+              int birdSteps = 3;
+              if (a.loc.getEnvironment() == 1) birdSteps = 2;
+              if (a.loc.getEnvironment() == 2) birdSteps = 1;
               int bestDist = 1000;
               Cell bestCell = a.loc;
               for (int dx = -birdSteps; dx <= birdSteps; dx++) {

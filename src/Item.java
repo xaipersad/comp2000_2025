@@ -15,7 +15,7 @@ public class Item {
     public void paint(Graphics g, int cellX, int cellY, int cellSize) {
          // square cat
         if (type == 0) {
-            g.setColor(Color.red);
+            g.setColor(Color.cyan);
             g.fillRect(cellX + 8, cellY + 8, cellSize - 16, cellSize - 16);
         } 
         //circle dog
