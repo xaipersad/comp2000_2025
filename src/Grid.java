@@ -19,23 +19,8 @@ public class Grid {
       }
     }
 
-    // randomly place items, never on lava
-    int x1, y1, x2, y2, x3, y3;
-    do {
-      x1 = rand.nextInt(20);
-      y1 = rand.nextInt(20);
-    } while (cells[x1][y1].getEnvironment() == 2);
-    do {
-      x2 = rand.nextInt(20);
-      y2 = rand.nextInt(20);
-    } while ((x2 == x1 && y2 == y1) || cells[x2][y2].getEnvironment() == 2);
-    do {
-      x3 = rand.nextInt(20);
-      y3 = rand.nextInt(20);
-    } while (((x3 == x1 && y3 == y1) || (x3 == x2 && y3 == y2)) || cells[x3][y3].getEnvironment() == 2);
-    squareItem = new Item(0, x1, y1);
-    circleItem = new Item(1, x2, y2);
-    triangleItem = new Item(2, x3, y3);
+    // use ItemManager to place items
+    ItemPlacer.placeItems(this);
   }
 
   private char colToLabel(int col) {

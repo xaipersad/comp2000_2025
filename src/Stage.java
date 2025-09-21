@@ -111,25 +111,7 @@ public class Stage {
     if (gameOver) {
       // Check if restart or quit button was clicked
       if (restartBtn.contains(mouseLoc)) {
-        // Reset all game state
-        grid = new Grid();
-        actors = new ArrayList<Actor>();
-        Random rand = new Random();
-        int x1, y1, x2, y2, x3, y3;
-        do { x1 = rand.nextInt(20); y1 = rand.nextInt(20); } while (grid.cells[x1][y1].getEnvironment() == 2);
-        do { x2 = rand.nextInt(20); y2 = rand.nextInt(20); } while ((x2 == x1 && y2 == y1) || grid.cells[x2][y2].getEnvironment() == 2);
-        do { x3 = rand.nextInt(20); y3 = rand.nextInt(20); } while (((x3 == x1 && y3 == y1) || (x3 == x2 && y3 == y2)) || grid.cells[x3][y3].getEnvironment() == 2);
-        actors.add(new Cat(grid.cellAtColRow(x1, y1).get()));
-        dog = new Dog(grid.cellAtColRow(x2, y2).get());
-        actors.add(dog);
-        actors.add(new Bird(grid.cellAtColRow(x3, y3).get()));
-        showDogMoves = false;
-        dogMoveOptions.clear();
-        dogScore = 0;
-        catScore = 0;
-        birdScore = 0;
-        gameOver = false;
-        gameOverText = "";
+        GameResetHelper.resetGame(this);
         return;
       } else if (quitBtn.contains(mouseLoc)) {
         System.exit(0);
@@ -149,13 +131,13 @@ public class Stage {
         dogMoveOptions.clear();
 
         // If dog lands on lava, respawn dog at random non-lava cell
-        if (cell.getEnvironment() == 2) {
+        if (EnvironmentHelper.isLava(cell)) {
           Random rand = new Random();
           int x, y;
           do {
             x = rand.nextInt(20);
             y = rand.nextInt(20);
-          } while (grid.cells[x][y].getEnvironment() == 2);
+          } while (EnvironmentHelper.isLava(grid.cells[x][y]));
           dog.setLocation(grid.cellAtColRow(x, y).get());
         }
 
@@ -185,7 +167,7 @@ public class Stage {
           }
         }
         // win/lose check
-        if (dogScore >= 0) {
+        if (dogScore >= 5) {
           gameOver = true;
           gameOverText = "YOU WIN";
         } else if (catScore >= 5 || birdScore >= 5) {

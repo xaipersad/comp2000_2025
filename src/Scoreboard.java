@@ -23,7 +23,7 @@ public class Scoreboard {
         // Draw objective text under the last score
         g.setColor(Color.BLACK);
         g.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 12));
-        g.drawString("Objective:", 740, scoreY+20);
+        g.drawString("Movement:", 740, scoreY+20);
         g.setFont(new java.awt.Font("Arial", java.awt.Font.PLAIN, 12));
         g.drawString("Grass (green) is 2 squares", 740, scoreY+40);
         g.drawString("Water (blue) is 1 square", 740, scoreY+60);
