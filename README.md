@@ -21,7 +21,7 @@ Generics are used in the program to provide type safety and flexibility, especia
 
 - **List<Actor>:** The main list of actors is declared as `List<Actor>`, allowing the program to store any subclass of `Actor` (Dog, Cat, Bird) in a single collection. This enables polymorphic behaviour and simplifies code for iterating, painting, and updating actors.
 - **Other collections:** Generics are also used for lists of cells (e.g. movement options), ensuring that only the correct types are stored and reducing runtime errors.
-- **Helper classes:** Some helpers could be further extended with generics for even more reusable logic (e.g., generic managers for different types of items or actors).
+- **Helper classes:** Some helpers could be further extended with generics for even more reusable logic (e.g. generic managers for different types of items or actors).
 
 This use of generics contributes to good design by:
 - Enforcing compile-time type safety
