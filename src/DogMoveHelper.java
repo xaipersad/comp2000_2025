@@ -6,9 +6,9 @@ public class DogMoveHelper {
         stage.dogMoveOptions.clear();
         int nx = cell.x / Cell.size;
         int ny = cell.y / Cell.size;
-        int dogSteps = 3;
-        if (cell.getEnvironment() == 1) dogSteps = 2;
-        if (cell.getEnvironment() == 2) dogSteps = 1;
+    int dogSteps = 2; // grass 
+    if (cell.getEnvironment() == 1) dogSteps = 1; // water
+    if (cell.getEnvironment() == 2) dogSteps = 2; // lava
         for (int dx = -dogSteps; dx <= dogSteps; dx++) {
             for (int dy = -dogSteps; dy <= dogSteps; dy++) {
                 if (dx == 0 && dy == 0) continue;
