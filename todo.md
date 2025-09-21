@@ -5,6 +5,6 @@ DONE ---- create score for items collected
 
 change the actors
 change items
-fix lava and score
-make items not spawn on lava
+DONE ----  fix lava and score
+DONE ----  make items not spawn on lava
 
