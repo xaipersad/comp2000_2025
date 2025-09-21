@@ -1,4 +1,4 @@
-# COMP2000 Grid Game Project
+# COMP2000 Assignment 1 - Xaishan Persad 47715383
 
 ## Overview
 This project is a simple grid-based game implemented in Java. The game features a 20x20 grid with grass, water, lava environments, three actors (Dog, Cat, Bird), and collectable items (circle, square, triangle). The player controls the Dog, aiming to collect 5 circles before the other actors collect their items.
