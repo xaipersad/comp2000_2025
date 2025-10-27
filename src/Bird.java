@@ -3,9 +3,13 @@ import java.awt.Polygon;
 import java.util.ArrayList;
 
 public class Bird extends Actor {
-  public Bird(Cell inLoc) {
-    loc = inLoc;
-    color = Color.orange;
+  public static final int birbMoves = 3;
+
+  public Bird(Cell inLoc, boolean isBot) {
+    super(inLoc, Color.GREEN, isBot, birbMoves);
+  }
+
+  protected void setPoly() {
     display = new ArrayList<Polygon>();
     Polygon wing1 = new Polygon();
     wing1.addPoint(loc.x + 5, loc.y + 5);

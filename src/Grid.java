@@ -1,26 +1,21 @@
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
-import java.util.Random;
+import java.util.Set;
 
 public class Grid {
   Cell[][] cells = new Cell[20][20];
-  Item squareItem;
-  Item circleItem;
-  Item triangleItem;
-
+  
   public Grid() {
-    Random rand = new Random();
     for(int i=0; i<cells.length; i++) {
       for(int j=0; j<cells[i].length; j++) {
         cells[i][j] = new Cell(colToLabel(i), j, 10+Cell.size*i, 10+Cell.size*j);
-        int randomEnv = rand.nextInt(3); 
-        cells[i][j].setEnvironment(randomEnv);
       }
     }
-
-    // use ItemManager to place items
-    ItemPlacer.placeItems(this);
   }
 
   private char colToLabel(int col) {
@@ -36,23 +31,6 @@ public class Grid {
       for(int j=0; j<cells[i].length; j++) {
         cells[i][j].paint(g, mousePos);
       }
-    }
-
-    // draw items
-    if (squareItem != null) {
-      int cx = 10 + Cell.size * squareItem.getX();
-      int cy = 10 + Cell.size * squareItem.getY();
-      squareItem.paint(g, cx, cy, Cell.size);
-    }
-    if (circleItem != null) {
-      int cx = 10 + Cell.size * circleItem.getX();
-      int cy = 10 + Cell.size * circleItem.getY();
-      circleItem.paint(g, cx, cy, Cell.size);
-    }
-    if (triangleItem != null) {
-      int cx = 10 + Cell.size * triangleItem.getX();
-      int cy = 10 + Cell.size * triangleItem.getY();
-      triangleItem.paint(g, cx, cy, Cell.size);
     }
   }
 
@@ -77,5 +55,29 @@ public class Grid {
       }
     }
     return Optional.empty();
+  }
+
+  public List<Cell> getRadius(Cell from, int size) {
+    int i = labelToCol(from.col);
+    int j = from.row;
+    Set<Cell> inRadius = new HashSet<Cell>();
+    if (size > 0) {
+        cellAtColRow(colToLabel(i), j - 1).ifPresent(inRadius::add);
+        cellAtColRow(colToLabel(i), j + 1).ifPresent(inRadius::add);
+        cellAtColRow(colToLabel(i - 1), j).ifPresent(inRadius::add);
+        cellAtColRow(colToLabel(i + 1), j).ifPresent(inRadius::add);
+    }
+
+    for(Cell c: inRadius.toArray(new Cell[0])) {
+        inRadius.addAll(getRadius(c, size - 1));
+    }
+    return new ArrayList<Cell>(inRadius);
+  }
+
+  public void paintOverlay(Graphics g, List<Cell> cells, Color color) {
+    g.setColor(color);
+    for(Cell c: cells) {
+      g.fillRect(c.x+2, c.y+2, c.width-4, c.height-4);
+    }
   }
 }

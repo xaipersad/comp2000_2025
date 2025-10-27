@@ -7,51 +7,38 @@ public class Cell extends Rectangle {
   static int size = 35;
   char col;
   int row;
-  int environment = 0; // environment type: 0 = grass, 1 = water, 2 = lava
 
   public Cell(char inCol, int inRow, int x, int y) {
     super(x, y, size, size);
     col = inCol;
     row = inRow;
-    environment = 0; 
-  }
-
-  // set the env of the cell
-  public void setEnvironment(int f) {
-    environment = f;
-  }
-
-  // get the env of the cell
-  public int getEnvironment() {
-    return environment;
   }
 
   public void paint(Graphics g, Point mousePos) {
-    // set color based on environment
-    Color cellColor;
-    if (environment == 1) {
-      cellColor = new Color(0,100,150); // water
-    } else if (environment == 2) {
-      cellColor = new Color(255,0,0); // lava
-    } else {
-      cellColor = new Color(0,100,0); // grass
-    }
-
-    if (contains(mousePos)) {
+    if(contains(mousePos)) {
       g.setColor(Color.GRAY);
     } else {
-      g.setColor(cellColor);
+      g.setColor(Color.WHITE);
     }
     g.fillRect(x, y, size, size);
     g.setColor(Color.BLACK);
     g.drawRect(x, y, size, size);
   }
 
+  @Override
   public boolean contains(Point p) {
     if(p != null) {
       return super.contains(p);
     } else {
       return false;
     }
+  }
+
+  public int leftOfComparison(Cell c) {
+    return Integer.compare(col, c.col);
+  }
+
+  public int aboveComparison(Cell c) {
+    return Integer.compare(row, c.row);
   }
 }

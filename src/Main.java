@@ -4,17 +4,25 @@ import java.awt.Graphics;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+
+import java.time.Duration;
+import java.time.Instant;
+
+
 public class Main extends JFrame {
     public static void main(String[] args) throws Exception {
       Main window = new Main();
       window.run();
     }
 
-    class Canvas extends JPanel implements java.awt.event.MouseListener {
-      Stage stage = new Stage();
+    class Canvas extends JPanel implements MouseListener {
+      Stage stage;
       public Canvas() {
         setPreferredSize(new Dimension(1024, 720));
-        addMouseListener(this);
+        this.addMouseListener(this);
+        stage = StageReader.readStage("data/stage1.rvb");
       }
 
       @Override
@@ -23,14 +31,21 @@ public class Main extends JFrame {
       }
 
       @Override
-      public void mouseClicked(java.awt.event.MouseEvent e) {
-        stage.handleClick(e.getPoint());
-        repaint();
+      public void mouseClicked(MouseEvent e) {
+        stage.mouseClicked(e.getX(), e.getY());
       }
-      @Override public void mousePressed(java.awt.event.MouseEvent e) {}
-      @Override public void mouseReleased(java.awt.event.MouseEvent e) {}
-      @Override public void mouseEntered(java.awt.event.MouseEvent e) {}
-      @Override public void mouseExited(java.awt.event.MouseEvent e) {}
+
+      @Override
+      public void mousePressed(MouseEvent e) {}
+
+      @Override
+      public void mouseReleased(MouseEvent e) {}
+
+      @Override
+      public void mouseEntered(MouseEvent e) {}
+
+      @Override
+      public void mouseExited(MouseEvent e) {}
     }
 
     private Main() {
@@ -43,7 +58,18 @@ public class Main extends JFrame {
 
     public void run() {
       while(true) {
+        // Re-draw the screen 50 times per second
+        Instant startTime = Instant.now();
         repaint();
+        Instant endTime = Instant.now();
+        long howLong = Duration.between(startTime, endTime).toMillis();
+        try {
+          Thread.sleep(20l - howLong);
+        } catch(InterruptedException e) {
+          System.out.println("thread was interrupted, nothing to worry about!");
+        } catch(IllegalArgumentException e) {
+          System.out.println("application can't keep up with framerate");
+        }
       }
     }
 }
