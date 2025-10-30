@@ -14,6 +14,14 @@ public class Grid {
     for(int i=0; i<cells.length; i++) {
       for(int j=0; j<cells[i].length; j++) {
         cells[i][j] = new Cell(colToLabel(i), j, 10+Cell.size*i, 10+Cell.size*j);
+        // assign terrain types: left side water, then sand, then grass
+        if (i < 4) {
+          cells[i][j].setTerrain(new WaterTerrain());
+        } else if (i < 8) {
+          cells[i][j].setTerrain(new SandTerrain());
+        } else {
+          // default GrassTerrain already set in Cell constructor
+        }
       }
     }
   }
@@ -30,6 +38,23 @@ public class Grid {
     for(int i=0; i<cells.length; i++) {
       for(int j=0; j<cells[i].length; j++) {
         cells[i][j].paint(g, mousePos);
+      }
+    }
+  }
+
+  /**
+   * Called each frame to allow terrains to update over time (evaporation,
+   * wetness accumulation, gradual transitions).
+   */
+  public void tick() {
+    for(int i=0; i<cells.length; i++) {
+      for(int j=0; j<cells[i].length; j++) {
+        // decay transient weather values first (rain/wind), then let terrain update
+        cells[i][j].tickDecay();
+        TerrainType t = cells[i][j].getTerrain();
+        if (t != null) {
+          t.tick(cells[i][j]);
+        }
       }
     }
   }
@@ -72,6 +97,35 @@ public class Grid {
         inRadius.addAll(getRadius(c, size - 1));
     }
     return new ArrayList<Cell>(inRadius);
+  }
+
+  /**
+   * Convert server coordinates to a Cell on the grid.
+   * The server uses J9 as the origin (0,0). So server x/y are offsets
+   * from that origin. This method maps those server coordinates to
+   * grid column/row indices and returns the corresponding Cell if it
+   * exists.
+   */
+  public Optional<Cell> cellAtServerCoords(int sx, int sy) {
+    int originCol = labelToCol('J');
+    int originRow = 9;
+    int c = originCol + sx;
+    int r = originRow + sy;
+    return cellAtColRow(c, r);
+  }
+
+  /**
+   * Convert server X (with origin J9) to grid column index.
+   */
+  public int serverToGridCol(int sx) {
+    return labelToCol('J') + sx;
+  }
+
+  /**
+   * Convert server Y (with origin J9) to grid row index.
+   */
+  public int serverToGridRow(int sy) {
+    return 9 + sy;
   }
 
   public void paintOverlay(Graphics g, List<Cell> cells, Color color) {

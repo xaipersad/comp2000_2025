@@ -53,6 +53,8 @@ public class Main extends JFrame {
       Canvas canvas = new Canvas();
       this.setContentPane(canvas);
       this.pack();
+      // Start the weather client inside this process so weather updates affect this UI
+      Client.startListeningAsync();
       this.setVisible(true);
     }
 

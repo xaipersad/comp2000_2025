@@ -15,7 +15,7 @@ public class Stage {
   Beat beat;
 
   public Stage() {
-    grid = new Grid();
+    grid = GameManager.getInstance().getGrid();
     listOfPlayers = new ArrayList<Actor>();
     cellOverlay = new ArrayList<Cell>();
     playerInAction = Optional.empty();
@@ -33,6 +33,8 @@ public class Stage {
   public void paint(Graphics g, Point mouseLoc) {
     // do we have bot moves to make?
     currentState.paint(g, this);
+    // let the grid and its terrains update gradually each frame
+    grid.tick();
     grid.paint(g, mouseLoc);
     // Blue cell selection overlay with 50% transparency
     grid.paintOverlay(g, cellOverlay, new Color(0f, 0f, 1f, 0.5f));
@@ -62,6 +64,17 @@ public class Stage {
       g.setColor(Color.DARK_GRAY);
       String coord = String.valueOf(hoverCell.col) + String.valueOf(hoverCell.row);
       g.drawString(coord, margin, yLoc);
+      // show weather info for the hovered cell
+      yLoc = yLoc + (blockVT/2);
+      g.drawString(String.format("Temp: %.1f C", hoverCell.getTemperature()), margin, yLoc);
+      yLoc = yLoc + (blockVT/2);
+      g.drawString(String.format("Rain: %.2f (norm)", hoverCell.getRainfall()), margin, yLoc);
+      yLoc = yLoc + (blockVT/2);
+      g.drawString(String.format("WindX: %.2f", hoverCell.getWindX()), margin, yLoc);
+      yLoc = yLoc + (blockVT/2);
+      g.drawString(String.format("WindY: %.2f", hoverCell.getWindY()), margin, yLoc);
+      yLoc = yLoc + (blockVT/2);
+      g.drawString(String.format("WindMag: %.2f", hoverCell.getWind()), margin, yLoc);
     }
 
     // agent display
