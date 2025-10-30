@@ -57,6 +57,21 @@ public class Grid {
     return Optional.empty();
   }
 
+  public Optional<Cell> cellAtIndex(int colIndex, int rowIndex) {
+    if(colIndex >= 0 && colIndex < cells.length && rowIndex >= 0 && rowIndex < cells[colIndex].length) {
+      return Optional.of(cells[colIndex][rowIndex]);
+    }
+    return Optional.empty();
+  }
+
+  public int getColumnCount() {
+    return cells.length;
+  }
+
+  public int getRowCount() {
+    return cells[0].length;
+  }
+
   public List<Cell> getRadius(Cell from, int size) {
     int i = labelToCol(from.col);
     int j = from.row;
@@ -79,5 +94,12 @@ public class Grid {
     for(Cell c: cells) {
       g.fillRect(c.x+2, c.y+2, c.width-4, c.height-4);
     }
+  }
+
+  public void paintOverlay(Graphics g, java.util.Map<Cell, Color> cellColors) {
+    cellColors.forEach((cell, color) -> {
+      g.setColor(color);
+      g.fillRect(cell.x + 2, cell.y + 2, cell.width - 4, cell.height - 4);
+    });
   }
 }

@@ -1,6 +1,5 @@
 import java.awt.Graphics;
 import java.util.List;
-import java.util.Random;
 
 public class BotMoving implements GameState {
   @Override
@@ -13,8 +12,19 @@ public class BotMoving implements GameState {
     for(Actor player: s.listOfPlayers) {
       if(player.isBot()) {
         List<Cell> possibleLocs = s.getClearRadius(player.loc, player.moves);
-        int moveBotChooses = (new Random()).nextInt(possibleLocs.size());
-        player.setLocation(possibleLocs.get(moveBotChooses));
+        if(possibleLocs.isEmpty()) {
+          continue;
+        }
+        MoveStrategy mover = player.getMover();
+        if(mover == null) {
+          mover = player.baseStrategy();
+          player.setMover(mover);
+        }
+        Cell destination = mover.chooseNextLoc(possibleLocs, player, s.listOfPlayers);
+        if(destination != null) {
+          player.setLocation(destination);
+          s.onActorMoved(player);
+        }
       }
     }
     s.currentState = new ChoosingActor();

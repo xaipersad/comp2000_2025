@@ -31,3 +31,17 @@ This use of generics contributes to good design by:
 
 ## Summary
 By leveraging inheritance and generics, the program achieves a modularised, extensible, and type-safe design. The use of helper classes (such as `ItemPlacer`, `GameResetHelper`, and `EnvironmentHelper`) further declutters the code and makes it easier to add new features, maintain the code, and avoid common programming errors.
+
+## Live Weather Integration
+Assignment 2 extends the grid game with a continuously streaming weather feed that reshapes how the stage plays out:
+
+- **HTTP weather stream:** `WeatherService` connects to `http://13.238.167.130/weather` and parses the live feed into `WeatherEvent` objects. The service uses a background daemon thread so the UI remains responsive while data arrives.
+- **Observer pattern:** `WeatherService` notifies the `WeatherController`, which acts as an observer that keeps the latest `WeatherSnapshot` for every affected cell. These snapshots drive several visual and mechanical changes on the board.
+- **Functional pipelines:** The incoming text feed is consumed with `BufferedReader.lines()`, mapped to events with `WeatherEvent::parse`, filtered using `Optional::stream`, and dispatched with lambda-based listeners. Within `WeatherController`, Java Streams are also used to build rainfall/temperature overlays and to update actors.
+- **Weather-driven gameplay:**
+  - **Flooding mechanic:** Rainfall above 70% marks a cell as flooded. Flooded tiles are removed from movement radii so humans and bots cannot step into deep water until the rain clears.
+  - **Temperature feedback:** Actor brightness is controlled through a lambda pipeline that maps the latest temperature to a brightness modifier. Hot zones make actors glow, while cooler zones dim them.
+  - **Wind-aware AI (Strategy pattern):** Bots swap from their usual `MoveRandomly`/`MoveLeft` strategies to a wind-biased `WindDrivenStrategy` whenever gusts are strong enough. This new strategy still composes with the base movement logic, but projects candidate moves onto the live wind vector supplied by the weather feed. It demonstrates both the Strategy pattern and lambda-based comparisons.
+- **Visual overlays & HUD:** Each weather snapshot produces an alpha-blended overlay that tints the affected cell. Hovering a cell now reveals its rain, wind, and temperature percentages so the player can plan around the environment.
+
+These changes rely on design patterns (Observer + Strategy), lambdas, and streams to keep the implementation concise while reacting intelligently to the live data feed.

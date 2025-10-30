@@ -3,6 +3,7 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class Stage {
@@ -13,6 +14,8 @@ public class Stage {
 
   GameState currentState;
   Beat beat;
+  private final WeatherController weatherController;
+  private final WeatherService weatherService;
 
   public Stage() {
     grid = new Grid();
@@ -21,6 +24,10 @@ public class Stage {
     playerInAction = Optional.empty();
     currentState = new ChoosingActor();
     beat = new AnimationBeat();
+    weatherController = new WeatherController(grid);
+    weatherService = new WeatherService("http://13.238.167.130/weather");
+    weatherService.addListener(weatherController);
+    weatherService.start();
   }
 
   public void addPlayer(Actor player) {
@@ -28,6 +35,7 @@ public class Stage {
     if(player.isBot()) {
       beat.punchIn(player);
     }
+    weatherController.updateMoveStrategy(player);
   }
 
   public void paint(Graphics g, Point mouseLoc) {
@@ -36,8 +44,11 @@ public class Stage {
     grid.paint(g, mouseLoc);
     // Blue cell selection overlay with 50% transparency
     grid.paintOverlay(g, cellOverlay, new Color(0f, 0f, 1f, 0.5f));
+    Map<Cell, Color> weatherOverlays = weatherController.overlayColors();
+    grid.paintOverlay(g, weatherOverlays);
 
     beat.ticktock();
+    weatherController.applyTemperature(listOfPlayers);
     for(Actor player: listOfPlayers) {
       player.paint(g);
     }
@@ -56,19 +67,26 @@ public class Stage {
     g.setColor(Color.DARK_GRAY);
     g.drawString(currentState.toString(), margin, yLoc);
     yLoc = yLoc + blockVT;
+    final int vTab = 15;
+    final int labelIndent = margin + hTab;
+    final int valueIndent = margin + 3*blockVT;
     Optional<Cell> underMouse = grid.cellAtPoint(mouseLoc);
     if(underMouse.isPresent()) {
       Cell hoverCell = underMouse.get();
       g.setColor(Color.DARK_GRAY);
       String coord = String.valueOf(hoverCell.col) + String.valueOf(hoverCell.row);
       g.drawString(coord, margin, yLoc);
+      Optional<WeatherSnapshot> snapshotOptional = weatherController.weatherAt(hoverCell);
+      if(snapshotOptional.isPresent()) {
+        WeatherSnapshot snapshot = snapshotOptional.get();
+        g.drawString(String.format("rain: %.0f%%", snapshot.rainfall() * 100), margin, yLoc + vTab);
+        g.drawString(String.format("wind: %.0f%%", snapshot.windStrength() * 100), margin, yLoc + 2*vTab);
+        g.drawString(String.format("temp: %.0f%%", snapshot.temperature() * 100), margin, yLoc + 3*vTab);
+      }
     }
 
     // agent display
-    final int vTab = 15;
-    final int labelIndent = margin + hTab;
-    final int valueIndent = margin + 3*blockVT;
-    yLoc = yLoc + 2*blockVT;
+    yLoc = yLoc + 2*blockVT + 2*vTab;
     for(int i = 0; i < listOfPlayers.size(); i++){
       Actor a = listOfPlayers.get(i);
       yLoc = yLoc + 2*blockVT;
@@ -89,10 +107,19 @@ public class Stage {
     for(Actor player: listOfPlayers) {
       init.remove(player.loc);
     }
+    init.removeIf(weatherController::isCellBlocked);
     return init;
   }
 
   public void mouseClicked(int x, int y) {
     currentState.mouseClick(x, y, this);
+  }
+
+  public void onActorMoved(Actor actor) {
+    weatherController.updateMoveStrategy(actor);
+  }
+
+  public WeatherController getWeatherController() {
+    return weatherController;
   }
 }
