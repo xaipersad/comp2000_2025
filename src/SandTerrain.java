@@ -45,10 +45,7 @@ public class SandTerrain implements TerrainType {
             if (Math.abs(moisture - old) > 1e-6) updateColor();
         }
 
-        // convert to water only when extremely saturated
-        if (wetness > 0.995) {
-            cell.setTerrain(new WaterTerrain());
-        }
+        // no direct terrain conversion here; global rules in Grid.tick() handle transitions
     }
 
     @Override

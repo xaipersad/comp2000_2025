@@ -54,10 +54,6 @@ public class WaterTerrain implements TerrainType {
         }
         updateColor();
 
-        // If water recedes below threshold, convert back to sand (or grass depending)
-        if (level < 0.01) {
-            // become sand when extremely shallow
-            cell.setTerrain(new SandTerrain());
-        }
+        // no direct terrain conversion here; global rules in Grid.tick() handle transitions
     }
 }

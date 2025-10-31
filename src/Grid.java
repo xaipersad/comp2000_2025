@@ -14,14 +14,7 @@ public class Grid {
     for(int i=0; i<cells.length; i++) {
       for(int j=0; j<cells[i].length; j++) {
         cells[i][j] = new Cell(colToLabel(i), j, 10+Cell.size*i, 10+Cell.size*j);
-        // assign terrain types: left side water, then sand, then grass
-        if (i < 4) {
-          cells[i][j].setTerrain(new WaterTerrain());
-        } else if (i < 8) {
-          cells[i][j].setTerrain(new SandTerrain());
-        } else {
-          // default GrassTerrain already set in Cell constructor
-        }
+        // make entire grid grass by default (Cell constructor sets GrassTerrain)
       }
     }
   }
@@ -54,6 +47,26 @@ public class Grid {
         TerrainType t = cells[i][j].getTerrain();
         if (t != null) {
           t.tick(cells[i][j]);
+        }
+
+        // Apply global terrain transitions based on temperature and rainfall.
+        // Rules:
+        // - When temp > 27.5 and rain == 0 -> becomes sand (from any terrain)
+        // - When grass and temp < 25 and rain > 0.40 -> becomes water
+        // - When sand and rain > 0.40 -> becomes grass
+        double temp = cells[i][j].getTemperature();
+        double rain = cells[i][j].getRainfall();
+        boolean noRain = rain <= 0.001; // treat near-zero as zero
+        TerrainType cur = cells[i][j].getTerrain();
+
+        if (temp > 27.5 && noRain) {
+          if (!(cur instanceof SandTerrain)) {
+            cells[i][j].setTerrain(new SandTerrain());
+          }
+        } else if (cur instanceof GrassTerrain && temp < 25.0 && rain > 0.40) {
+          cells[i][j].setTerrain(new WaterTerrain());
+        } else if (cur instanceof SandTerrain && rain > 0.40) {
+          cells[i][j].setTerrain(new GrassTerrain());
         }
       }
     }
