@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 public class Cat extends Actor {
   public static final int catMoves = 2;
+  private int health = 3; // 0..3 hearts only for Cat
 
   public Cat(Cell inLoc, boolean isBot) {
     super(inLoc, Color.BLUE, isBot, catMoves);
@@ -27,4 +28,22 @@ public class Cat extends Actor {
     display.add(ear1);
     display.add(ear2);
   }
+
+  // Cat-specific health API
+  public int getHealth() {
+    return health;
+  }
+
+  public void setHealth(int value) {
+    if (value < 0) {
+      health = 0;
+    } else if (value > 3) {
+      health = 3;
+    } else {
+      health = value;
+    }
+  }
+
+  public void loseHeart() { setHealth(health - 1); }
+  public void gainHeart() { setHealth(health + 1); }
 }

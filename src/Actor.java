@@ -11,6 +11,7 @@ public abstract class Actor implements Pulse {
   int moves;
   int turns;
   MoveStrategy mover;
+  private int points;
 
   protected Actor(Cell inLoc, Color inColor, boolean isBot, int inMoves) {
     loc = inLoc;
@@ -19,6 +20,7 @@ public abstract class Actor implements Pulse {
     bot = isBot;
     moves = inMoves;
     turns = 1;
+    points = 0;
     setPoly();
   }
 
@@ -54,4 +56,13 @@ public abstract class Actor implements Pulse {
     hsbValues[1] = ((float) percentage) / 100.0f;
     color = Color.getHSBColor(hsbValues[0], hsbValues[1], hsbValues[2]);
   }
+
+  public int getPoints() {
+    return points;
+  }
+
+  public void addPoint() {
+    points = points + 1;
+  }
+
 }

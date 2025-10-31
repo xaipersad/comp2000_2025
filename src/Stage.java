@@ -20,6 +20,9 @@ public class Stage {
   private static final int MAX_TREES = 3;
   private static final int MAX_FISH = 3;
   private static final int MAX_CACTUS = 3;
+  // Bot move timer
+  private long lastBotMoveMs = 0L;
+  private static final long BOT_MOVE_INTERVAL_MS = 2500L; // bots step roughly once per 2.5s
 
   GameState currentState;
   Beat beat;
@@ -41,14 +44,33 @@ public class Stage {
   }
 
   public void paint(Graphics g, Point mouseLoc) {
-    // do we have bot moves to make?
-    currentState.paint(g, this);
+    // If there are no human moves left, automatically switch to bot phase
+    if (currentState instanceof ChoosingActor) {
+      int humansWithMovesLeft = 0;
+      for (int i = 0; i < listOfPlayers.size(); i++) {
+        Actor a = listOfPlayers.get(i);
+        if (!a.isBot() && a.turns > 0) {
+          humansWithMovesLeft++;
+        }
+      }
+      if (humansWithMovesLeft == 0) {
+        currentState = new BotMoving();
+      }
+    }
+  // do we have bot moves to make?
+  currentState.paint(g, this);
     // let the grid and its terrains update gradually each frame
     grid.tick();
   // remove any decorations whose terrain no longer matches their type
   purgeMismatchedDecorations();
     // maybe spawn decorations (tree/fish/cactus) every 5 seconds
     maybeSpawnDecorations();
+    // move bots periodically regardless of human turn state
+    long nowBot = System.currentTimeMillis();
+    if (nowBot - lastBotMoveMs >= BOT_MOVE_INTERVAL_MS) {
+      (new BotMoving()).paint(g, this);
+      lastBotMoveMs = nowBot;
+    }
     grid.paint(g, mouseLoc);
     // Blue cell selection overlay with 50% transparency
     grid.paintOverlay(g, cellOverlay, new Color(0f, 0f, 1f, 0.5f));
@@ -177,6 +199,40 @@ public class Stage {
       g.drawString(String.format("WindMag: %.2f", hoverCell.getWind()), margin, yLoc);
     }
 
+    // Cat health section (separate from other actor info)
+    yLoc = yLoc + blockVT;
+    Cat theCat = null;
+    for (int i = 0; i < listOfPlayers.size(); i++) {
+      if (listOfPlayers.get(i) instanceof Cat) {
+        theCat = (Cat) listOfPlayers.get(i);
+        break;
+      }
+    }
+      if (theCat != null) {
+        g.setColor(Color.DARK_GRAY);
+        java.awt.Font oldFont = g.getFont();
+        // Bigger label font
+        java.awt.Font labelFont = oldFont.deriveFont(java.awt.Font.BOLD, oldFont.getSize() + 6.0f);
+        g.setFont(labelFont);
+        g.drawString("Health:", margin, yLoc);
+
+        // Compose hearts string
+        int hp = theCat.getHealth();
+        String hearts = "";
+        for (int h = 0; h < hp; h++) { hearts = hearts + "\u2665 "; }
+        for (int h = hp; h < 3; h++) { hearts = hearts + "\u2661 "; }
+
+        // Bigger hearts font
+        java.awt.Font heartsFont = oldFont.deriveFont(java.awt.Font.BOLD, oldFont.getSize() + 12.0f);
+        g.setFont(heartsFont);
+        g.setColor(Color.RED);
+        g.drawString(hearts, margin + 120, yLoc);
+
+        // restore defaults
+        g.setFont(oldFont);
+        g.setColor(Color.DARK_GRAY);
+      }
+
     // agent display
     final int vTab = 15;
     final int labelIndent = margin + hTab;
@@ -184,6 +240,14 @@ public class Stage {
     yLoc = yLoc + 2*blockVT;
     for(int i = 0; i < listOfPlayers.size(); i++){
       Actor a = listOfPlayers.get(i);
+      // Do not show decoration objects (Tree, Fish, Cactus) in the side panel
+      if (a instanceof Tree) {
+        continue;
+      } else if (a instanceof Fish) {
+        continue;
+      } else if (a instanceof Cactus) {
+        continue;
+      }
       yLoc = yLoc + 2*blockVT;
       g.drawString(a.getClass().getName(), margin, yLoc);
       g.drawString("location:", labelIndent, yLoc+vTab);
@@ -196,22 +260,46 @@ public class Stage {
         playerType = "Human";
       }
       g.drawString(playerType, valueIndent, yLoc+2*vTab);
-      if(a.isBot() && a.mover != null) {
-        g.drawString("mover:", labelIndent, yLoc+3*vTab);
-        g.drawString(a.mover.getClass().getName(), valueIndent, yLoc+3*vTab);
-      }
+      // show points for players
+      g.drawString("points:", labelIndent, yLoc+3*vTab);
+      g.drawString(Integer.toString(a.getPoints()), valueIndent, yLoc+3*vTab);
+      // remove mover from bot info (no mover line)
     }    
   }
 
   public List<Cell> getClearRadius(Cell from, int size) {
     List<Cell> init = grid.getRadius(from, size);
-    for(Actor player: listOfPlayers) {
-      init.remove(player.loc);
+    for(int idx = 0; idx < listOfPlayers.size(); idx++) {
+      Actor a = listOfPlayers.get(idx);
+      // Only block cells occupied by non-decoration actors (players).
+      if (!(a instanceof Tree) && !(a instanceof Fish) && !(a instanceof Cactus)) {
+        init.remove(a.loc);
+      }
     }
     return init;
   }
 
   public void mouseClicked(int x, int y) {
     currentState.mouseClick(x, y, this);
+  }
+
+  // Move an actor and collect any decoration at the destination cell
+  public void moveActorTo(Actor actor, Cell dest) {
+    actor.setLocation(dest);
+    // check for collectible decorations at dest
+    for (int i = 0; i < listOfPlayers.size(); i++) {
+      Actor other = listOfPlayers.get(i);
+      if (other == actor) {
+        continue;
+      }
+      if (other.loc == dest) {
+        if (other instanceof Tree || other instanceof Fish || other instanceof Cactus) {
+          // collect it: remove and add a point
+          listOfPlayers.remove(i);
+          actor.addPoint();
+          break;
+        }
+      }
+    }
   }
 }

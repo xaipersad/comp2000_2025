@@ -13,7 +13,7 @@ public class SelectingNewLocation implements GameState {
     }
     s.cellOverlay = new ArrayList<Cell>();
     if(clicked.isPresent() && s.playerInAction.isPresent()) {
-      s.playerInAction.get().setLocation(clicked.get());
+      s.moveActorTo(s.playerInAction.get(), clicked.get());
       s.playerInAction.get().turns--;
       int humansWithMovesLeft = 0;
       for(Actor player: s.listOfPlayers) {
