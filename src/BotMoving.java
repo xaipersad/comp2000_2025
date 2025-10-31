@@ -15,7 +15,8 @@ public class BotMoving implements GameState {
     for(int p = 0; p < snapshot.size(); p++) {
       Actor player = snapshot.get(p);
       if(player.isBot()) {
-        List<Cell> possibleLocs = s.getClearRadius(player.loc, player.moves);
+        // Limit bot movement to 1 cell per bot phase to avoid long jumps
+        List<Cell> possibleLocs = s.getClearRadius(player.loc, 1);
         if (possibleLocs.size() == 0) {
           continue;
         }
@@ -62,7 +63,10 @@ public class BotMoving implements GameState {
     }
     s.currentState = new ChoosingActor();
     for(Actor player: s.listOfPlayers) {
-      player.turns = 1;
+      // Reset turns only for non-decoration actors
+      if (!(player instanceof Tree) && !(player instanceof Fish) && !(player instanceof Cactus)) {
+        player.turns = 1;
+      }
     }
   }  
 

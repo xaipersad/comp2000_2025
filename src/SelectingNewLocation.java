@@ -17,7 +17,10 @@ public class SelectingNewLocation implements GameState {
       s.playerInAction.get().turns--;
       int humansWithMovesLeft = 0;
       for(Actor player: s.listOfPlayers) {
-        if(!player.isBot() && player.turns > 0) {
+        if(!player.isBot() && player.turns > 0
+           && !(player instanceof Tree)
+           && !(player instanceof Fish)
+           && !(player instanceof Cactus)) {
           humansWithMovesLeft++;
         }
       }
