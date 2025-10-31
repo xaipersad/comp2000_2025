@@ -24,7 +24,12 @@ public class GrassTerrain implements TerrainType {
     Color dry = new Color(124, 252, 0); // bright dry grass
     Color wet = new Color(0, 70, 0);    // darker wet grass
         // treat very small moisture as zero so color reverts cleanly
-        double m = (moisture > 0.01) ? moisture : 0.0;
+        double m;
+        if (moisture > 0.01) {
+            m = moisture;
+        } else {
+            m = 0.0;
+        }
         int r = (int) (dry.getRed() * (1.0 - m) + wet.getRed() * m);
         int g = (int) (dry.getGreen() * (1.0 - m) + wet.getGreen() * m);
         int b = (int) (dry.getBlue() * (1.0 - m) + wet.getBlue() * m);

@@ -51,7 +51,8 @@ public class Grid {
 
         // Apply global terrain transitions based on temperature and rainfall.
         // Rules:
-        // - When temp > 27.5 and rain == 0 -> becomes sand (from any terrain)
+        // - Flood: when temp > 26 and rain > 0.36 -> becomes water (from any terrain)
+  // - When temp > 27.5 and rain == 0 -> becomes sand (from any terrain except water handled below)
         // - When grass and temp < 25 and rain > 0.40 -> becomes water
         // - When sand and rain > 0.40 -> becomes grass
         double temp = cells[i][j].getTemperature();
@@ -59,7 +60,15 @@ public class Grid {
         boolean noRain = rain <= 0.001; // treat near-zero as zero
         TerrainType cur = cells[i][j].getTerrain();
 
-        if (temp > 27.5 && noRain) {
+        // Flood rule first so it takes priority when both conditions are met
+        if (temp > 26.5 && rain > 0.41) {
+          if (!(cur instanceof WaterTerrain)) {
+            cells[i][j].setTerrain(new WaterTerrain());
+          }
+        // Water turns back into grass when rain reaches zero (don't do instant temp-based flip)
+        } else if (cur instanceof WaterTerrain && noRain) {
+          cells[i][j].setTerrain(new GrassTerrain());
+        } else if (temp > 27.5 && noRain) {
           if (!(cur instanceof SandTerrain)) {
             cells[i][j].setTerrain(new SandTerrain());
           }
@@ -99,12 +108,16 @@ public class Grid {
     int i = labelToCol(from.col);
     int j = from.row;
     Set<Cell> inRadius = new HashSet<Cell>();
-    if (size > 0) {
-        cellAtColRow(colToLabel(i), j - 1).ifPresent(inRadius::add);
-        cellAtColRow(colToLabel(i), j + 1).ifPresent(inRadius::add);
-        cellAtColRow(colToLabel(i - 1), j).ifPresent(inRadius::add);
-        cellAtColRow(colToLabel(i + 1), j).ifPresent(inRadius::add);
-    }
+  if (size > 0) {
+    java.util.Optional<Cell> opt1 = cellAtColRow(colToLabel(i), j - 1);
+    if (opt1.isPresent()) { inRadius.add(opt1.get()); }
+    java.util.Optional<Cell> opt2 = cellAtColRow(colToLabel(i), j + 1);
+    if (opt2.isPresent()) { inRadius.add(opt2.get()); }
+    java.util.Optional<Cell> opt3 = cellAtColRow(colToLabel(i - 1), j);
+    if (opt3.isPresent()) { inRadius.add(opt3.get()); }
+    java.util.Optional<Cell> opt4 = cellAtColRow(colToLabel(i + 1), j);
+    if (opt4.isPresent()) { inRadius.add(opt4.get()); }
+  }
 
     for(Cell c: inRadius.toArray(new Cell[0])) {
         inRadius.addAll(getRadius(c, size - 1));

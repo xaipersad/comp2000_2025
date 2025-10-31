@@ -60,13 +60,16 @@ public class Client {
      * Use this when you run only `java Main` and want weather updates to affect that UI.
      */
     public static void startListeningAsync() {
-        Thread t = new Thread(() -> {
-            try {
-                startListening();
-            } catch (Exception e) {
-                // Only use the real HTTP server. Log the error and stop the client thread.
-                System.err.println("Weather client failed: " + e.getMessage());
-                e.printStackTrace();
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    startListening();
+                } catch (Exception e) {
+                    // Only use the real HTTP server. Log the error and stop the client thread.
+                    System.err.println("Weather client failed: " + e.getMessage());
+                    e.printStackTrace();
+                }
             }
         }, "WeatherClient-Thread");
         t.setDaemon(true);
