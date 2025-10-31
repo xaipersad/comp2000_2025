@@ -10,6 +10,16 @@ public class Stage {
   List<Actor> listOfPlayers;
   List<Cell> cellOverlay;
   Optional<Actor> playerInAction;
+  // Spawning support
+  private long lastSpawnCheckMs = 0L;
+  private static final long SPAWN_INTERVAL_MS = 5000L; // 5 seconds
+  private static final double PROB_GRASS_TREE = 0.03; // 3% per check
+  private static final double PROB_WATER_FISH = 0.03;
+  private static final double PROB_SAND_CACTUS = 0.03;
+  private java.util.Random rng = new java.util.Random();
+  private static final int MAX_TREES = 3;
+  private static final int MAX_FISH = 3;
+  private static final int MAX_CACTUS = 3;
 
   GameState currentState;
   Beat beat;
@@ -35,6 +45,10 @@ public class Stage {
     currentState.paint(g, this);
     // let the grid and its terrains update gradually each frame
     grid.tick();
+  // remove any decorations whose terrain no longer matches their type
+  purgeMismatchedDecorations();
+    // maybe spawn decorations (tree/fish/cactus) every 5 seconds
+    maybeSpawnDecorations();
     grid.paint(g, mouseLoc);
     // Blue cell selection overlay with 50% transparency
     grid.paintOverlay(g, cellOverlay, new Color(0f, 0f, 1f, 0.5f));
@@ -44,6 +58,92 @@ public class Stage {
       player.paint(g);
     }
     draw_sidepanel(g, mouseLoc);
+  }
+
+  private boolean isOccupied(Cell cell) {
+    for (int i = 0; i < listOfPlayers.size(); i++) {
+      if (listOfPlayers.get(i).loc == cell) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private void maybeSpawnDecorations() {
+    long now = System.currentTimeMillis();
+    if (now - lastSpawnCheckMs < SPAWN_INTERVAL_MS) {
+      return;
+    }
+    lastSpawnCheckMs = now;
+
+    // count existing decorations to enforce caps
+    int trees = 0;
+    int fish = 0;
+    int cacti = 0;
+    for (int idx = 0; idx < listOfPlayers.size(); idx++) {
+      Actor a = listOfPlayers.get(idx);
+      if (a instanceof Tree) {
+        trees++;
+      } else if (a instanceof Fish) {
+        fish++;
+      } else if (a instanceof Cactus) {
+        cacti++;
+      }
+    }
+    // iterate all cells and randomly spawn based on terrain type
+    for (int i = 0; i < 20; i++) {
+      for (int j = 0; j < 20; j++) {
+        Optional<Cell> opt = grid.cellAtColRow(i, j);
+        if (!opt.isPresent()) continue;
+        Cell cell = opt.get();
+        if (isOccupied(cell)) continue;
+        TerrainType t = cell.getTerrain();
+        if (t instanceof GrassTerrain) {
+          if (trees < MAX_TREES && rng.nextDouble() < PROB_GRASS_TREE) {
+            addPlayer(new Tree(cell, false));
+            trees++;
+          }
+        } else if (t instanceof WaterTerrain) {
+          if (fish < MAX_FISH && rng.nextDouble() < PROB_WATER_FISH) {
+            addPlayer(new Fish(cell, false));
+            fish++;
+          }
+        } else if (t instanceof SandTerrain) {
+          if (cacti < MAX_CACTUS && rng.nextDouble() < PROB_SAND_CACTUS) {
+            addPlayer(new Cactus(cell, false));
+            cacti++;
+          }
+        }
+      }
+    }
+  }
+
+  private void purgeMismatchedDecorations() {
+    // rebuild the list excluding decorations that no longer match their terrain
+    List<Actor> kept = new ArrayList<Actor>();
+    for (int i = 0; i < listOfPlayers.size(); i++) {
+      Actor a = listOfPlayers.get(i);
+      if (a instanceof Tree) {
+        // Tree must be on grass
+        if (a.loc.getTerrain() instanceof GrassTerrain) {
+          kept.add(a);
+        }
+      } else if (a instanceof Fish) {
+        // Fish must be on water
+        if (a.loc.getTerrain() instanceof WaterTerrain) {
+          kept.add(a);
+        }
+      } else if (a instanceof Cactus) {
+        // Cactus must be on sand
+        if (a.loc.getTerrain() instanceof SandTerrain) {
+          kept.add(a);
+        }
+      } else {
+        // keep all other actors (cats/dogs/birds, etc.)
+        kept.add(a);
+      }
+    }
+    listOfPlayers = kept;
   }
 
   private void draw_sidepanel(Graphics g, Point mouseLoc) {
