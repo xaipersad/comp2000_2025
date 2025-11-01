@@ -5,25 +5,19 @@ import java.util.Optional;
 public class SelectingNewLocation implements GameState {
   @Override
   public void mouseClick(int x, int y, Stage s) {
-    Optional<Cell> clicked = Optional.empty();
-    for(Cell c: s.cellOverlay) {
-      if(c.contains(x, y)) {
-        clicked = Optional.of(c);
-      }
-    }
+    Optional<Cell> clicked = s.cellOverlay.stream()
+      .filter(c -> c.contains(x, y))
+      .findFirst();
     s.cellOverlay = new ArrayList<Cell>();
     if(clicked.isPresent() && s.playerInAction.isPresent()) {
       s.moveActorTo(s.playerInAction.get(), clicked.get());
       s.playerInAction.get().turns--;
-      int humansWithMovesLeft = 0;
-      for(Actor player: s.listOfPlayers) {
-        if(!player.isBot() && player.turns > 0
-           && !(player instanceof Tree)
-           && !(player instanceof Fish)
-           && !(player instanceof Cactus)) {
-          humansWithMovesLeft++;
-        }
-      }
+      int humansWithMovesLeft = (int) s.listOfPlayers.stream()
+        .filter(player -> !player.isBot() && player.turns > 0)
+        .filter(player -> !(player instanceof Tree)
+                          && !(player instanceof Fish)
+                          && !(player instanceof Cactus))
+        .count();
       if(humansWithMovesLeft > 0) {
         s.currentState = new ChoosingActor();
       } else {
@@ -34,7 +28,6 @@ public class SelectingNewLocation implements GameState {
 
   @Override
   public void paint(Graphics g, Stage s) {
-    // no paint activity for this GameState
   }
 
   public String toString() {

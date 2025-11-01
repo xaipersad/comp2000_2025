@@ -9,7 +9,6 @@ public class Tree extends Actor {
 
   protected void setPoly() {
     display = new ArrayList<Polygon>();
-    // simple tree: trunk + canopy triangle
     Polygon trunk = new Polygon();
     trunk.addPoint(loc.x + 15, loc.y + 20);
     trunk.addPoint(loc.x + 20, loc.y + 20);

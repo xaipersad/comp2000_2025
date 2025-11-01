@@ -8,7 +8,6 @@ public class GameManager {
         grid = new Grid();
         weatherObserver = new WeatherObserver(grid);
         weatherBus = new WeatherEventBus();
-        // Register the observer with the bus (Observer pattern)
         weatherBus.addListener(weatherObserver);
     }
 

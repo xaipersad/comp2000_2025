@@ -4,12 +4,11 @@ import java.util.ArrayList;
 
 public class Cat extends Actor {
   public static final int catMoves = 2;
-  private int health = 3; // 0..3 hearts only for Cat
-  private int bubbles = 0; // 0..3 bubbles when in water
-  private long lastBubbleMs = 0L; // last time a bubble was removed
+  private int health = 3; 
+  private int bubbles = 0; 
+  private long lastBubbleMs = 0L; 
   private boolean inWater = false; // track if currently in water
-  // Sand (sun) tracking
-  private int suns = 0; // 0..3 suns when in sand
+  private int suns = 0; 
   private long lastSunMs = 0L;
   private boolean inSand = false;
 
@@ -36,7 +35,7 @@ public class Cat extends Actor {
     display.add(ear2);
   }
 
-  // Cat-specific health API
+  // cat health 
   public int getHealth() {
     return health;
   }
@@ -54,7 +53,7 @@ public class Cat extends Actor {
   public void loseHeart() { setHealth(health - 1); }
   public void gainHeart() { setHealth(health + 1); }
 
-  // Bubbles API
+  // bubbles 
   public int getBubbles() { return bubbles; }
   public void setBubbles(int value) {
     if (value < 0) {
@@ -71,7 +70,7 @@ public class Cat extends Actor {
   public boolean isInWater() { return inWater; }
   public void setInWater(boolean v) { inWater = v; }
 
-  // Suns API (sand)
+  // suns
   public int getSuns() { return suns; }
   public void setSuns(int value) {
     if (value < 0) {

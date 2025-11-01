@@ -53,14 +53,12 @@ public class Main extends JFrame {
       Canvas canvas = new Canvas();
       this.setContentPane(canvas);
       this.pack();
-      // Start the weather client inside this process so weather updates affect this UI
       Client.startListeningAsync();
       this.setVisible(true);
     }
 
     public void run() {
       while(true) {
-        // Re-draw the screen 50 times per second
         Instant startTime = Instant.now();
         repaint();
         Instant endTime = Instant.now();

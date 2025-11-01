@@ -3,7 +3,7 @@ import java.util.List;
 import java.util.Random;
 
 public class BotMoving implements GameState {
-  private final TargetingStrategy strategy = new NearestDecorationTargetingStrategy();
+  private final TargetingStrategy strategy = new NearestObjectStrategy();
   @Override
   public void mouseClick(int x, int y, Stage s) {
     // no mouseClick activity for this GameState

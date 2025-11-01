@@ -14,7 +14,6 @@ public class Grid implements Iterable<Cell> {
     for(int i=0; i<cells.length; i++) {
       for(int j=0; j<cells[i].length; j++) {
         cells[i][j] = new Cell(colToLabel(i), j, 10+Cell.size*i, 10+Cell.size*j);
-        // make entire grid grass by default (Cell constructor sets GrassTerrain)
       }
     }
   }
@@ -34,38 +33,26 @@ public class Grid implements Iterable<Cell> {
       }
     }
   }
-
-  /**
-   * Called each frame to allow terrains to update over time (evaporation,
-   * wetness accumulation, gradual transitions).
-   */
   public void tick() {
     for(int i=0; i<cells.length; i++) {
       for(int j=0; j<cells[i].length; j++) {
-        // decay transient weather values first (rain/wind), then let terrain update
+        // decay transient weather values first, then let terrain update
         cells[i][j].tickDecay();
         TerrainType t = cells[i][j].getTerrain();
         if (t != null) {
           t.tick(cells[i][j]);
         }
-
-        // Apply global terrain transitions based on temperature and rainfall.
-        // Rules:
-        // - Flood: when temp > 26 and rain > 0.36 -> becomes water (from any terrain)
-  // - When temp > 27.5 and rain == 0 -> becomes sand (from any terrain except water handled below)
-        // - When grass and temp < 25 and rain > 0.40 -> becomes water
-        // - When sand and rain > 0.40 -> becomes grass
         double temp = cells[i][j].getTemperature();
         double rain = cells[i][j].getRainfall();
         boolean noRain = rain <= 0.001; // treat near-zero as zero
         TerrainType cur = cells[i][j].getTerrain();
 
-        // Flood rule first so it takes priority when both conditions are met
+        // flood rule first so it takes priority when both conditions are met
         if (temp > 26.5 && rain > 0.41) {
           if (!(cur instanceof WaterTerrain)) {
             cells[i][j].setTerrain(new WaterTerrain());
           }
-        // Water turns back into grass when rain reaches zero (don't do instant temp-based flip)
+        // water turns back into grass when rain reaches zero
         } else if (cur instanceof WaterTerrain && noRain) {
           cells[i][j].setTerrain(new GrassTerrain());
         } else if (temp > 27.5 && noRain) {

@@ -1,12 +1,12 @@
 import java.util.List;
 
-public class NearestDecorationTargetingStrategy implements TargetingStrategy {
+public class NearestObjectStrategy implements TargetingStrategy {
   @Override
   public Cell chooseMove(Actor actor, List<Cell> possibleLocs, Stage s) {
     if (possibleLocs == null || possibleLocs.size() == 0) {
       return null;
     }
-    // Find nearest decoration (Tree/Fish/Cactus)
+    // find nearest object
     Cell target = null;
     int bestDistToObject = Integer.MAX_VALUE;
     for (int i = 0; i < s.listOfPlayers.size(); i++) {
@@ -22,10 +22,9 @@ public class NearestDecorationTargetingStrategy implements TargetingStrategy {
       }
     }
     if (target == null) {
-      // no decorations: just pick the first (caller can randomize if desired)
+      // if no objects just pick the first possible location
       return possibleLocs.get(0);
     }
-    // Choose the possible location that gets closest to target
     Cell chosen = possibleLocs.get(0);
     int best = Integer.MAX_VALUE;
     for (int i = 0; i < possibleLocs.size(); i++) {

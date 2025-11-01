@@ -9,7 +9,6 @@ public class Cactus extends Actor {
 
   protected void setPoly() {
     display = new ArrayList<Polygon>();
-    // simple cactus: central column + two arms
     Polygon center = new Polygon();
     center.addPoint(loc.x + 16, loc.y + 8);
     center.addPoint(loc.x + 20, loc.y + 8);

@@ -44,8 +44,6 @@ public class SandTerrain implements TerrainType {
             moisture = Math.max(0.0, moisture - 0.0005);
             if (Math.abs(moisture - old) > 1e-6) updateColor();
         }
-
-        // no direct terrain conversion here; global rules in Grid.tick() handle transitions
     }
 
     @Override

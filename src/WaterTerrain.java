@@ -1,7 +1,7 @@
 import java.awt.Color;
 
 public class WaterTerrain implements TerrainType {
-    private double level = 1.0; // 0..1, how much water
+    private double level = 1.0;
     private Color currentColor = new Color(28, 107, 160);
 
     @Override
@@ -22,7 +22,6 @@ public class WaterTerrain implements TerrainType {
     }
 
     private void updateColor() {
-        // interpolate between light blue and deep blue based on level
         int r = (int) (28 * level + 200 * (1 - level));
         int g = (int) (107 * level + 220 * (1 - level));
         int b = (int) (160 * level + 255 * (1 - level));
@@ -41,19 +40,22 @@ public class WaterTerrain implements TerrainType {
 
     @Override
     public void tick(Cell cell) {
-        // if there's no rain, water level slowly drops due to evaporation
+        // if no rain water level slowly drops cos evaporation
         double rain = cell.getRainfall();
         double temp = cell.getTemperature();
         if (rain > 0) {
             // rain increases water level slowly
             level = Math.min(1.0, level + rain * 0.005);
         } else {
-            // evaporate faster at temperatures above 25C, but still gradual
-            double evap = temp > 25.0 ? 0.005 : 0.002; // per-tick evaporation
+            // evaporate faster at temperatures above 25C
+            double evap;
+            if (temp > 25.0) {
+                evap = 0.005;
+            } else {
+                evap = 0.002;
+            }
             level = Math.max(0.0, level - evap);
         }
         updateColor();
-
-        // no direct terrain conversion here; global rules in Grid.tick() handle transitions
     }
 }

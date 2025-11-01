@@ -13,28 +13,20 @@ public class StageReader {
     String actor;
 
     try {
-      // read all lines from file into list
       lines = Files.readAllLines(Paths.get(path));
-
-      // format is Crr=aaaa where C is column, r is row, and a is actor
       for(String line: lines) {
         boolean isBot = false;
         String suffix = " bot";
 
-        // split on equals-sign
         idx = line.indexOf('=');
         if(idx == -1) {
           throw new FormatException("missing equals sign.");
         } else {
-
-          // grab column character ensuring it's upper-case
           col = Character.toUpperCase(line.charAt(0));
           if (col >= 'A' && col <= 'Z') {
           } else {
             throw new FormatException("column '" + String.valueOf(col) + "' is non-alpabetic.");
           }
-
-          // characters between the column identifier and the equals-sign are the row number
           for(int i=1; i<idx; i++) {
             if(line.charAt(i) < '0' || line.charAt(i) > '9') {
               throw new FormatException("row '" + line.substring(i, idx) + "' is non-numeric.");
@@ -47,8 +39,6 @@ public class StageReader {
             actor = actor.substring(0, actor.length()-suffix.length());
           }
         }
-
-        // Ensure that Col and Row is not greater than the size of the Grid
         if(col > 'T') {
           throw new IndexOutOfBoundsException("col '" + String.valueOf(col) + "' is out of bounds.");
         }

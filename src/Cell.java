@@ -22,22 +22,16 @@ public class Cell extends Rectangle {
   }
 
   public void updateWeather(String type, double value) {
-    // server sends normalized values (0..1) for temp/rain/wind components.
-    // Map them into sensible internal units:
-    // - temp: map 0..1 -> 0..50 C
-    // - rain: keep as 0..1 (normalized intensity)
-    // - windx/windy: keep as components 0..1
     switch (type.toLowerCase()) {
       case "temp":
       case "temperature":
-        temperature = value * 50.0; // convert normalized to Celsius
+        temperature = value * 50.0; 
         break;
       case "rain":
       case "rainfall":
-        rainfall = value; // normalized 0..1
+        rainfall = value; 
         break;
       case "wind":
-        // legacy single-component wind magnitude
         wind = value;
         break;
       case "windx":
@@ -49,8 +43,6 @@ public class Cell extends Rectangle {
     }
     terrain.applyWeather(type, value);
   }
-
-  // Simple accessors so other classes (eg. WeatherObserver) can read/modify
   public double getTemperature() {
     return temperature;
   }
@@ -94,13 +86,8 @@ public class Cell extends Rectangle {
     g.setColor(Color.BLACK);
     g.drawRect(x, y, size, size);
   }
-
-  /**
-   * Called each frame to decay transient weather measurements that may
-   * not be continuously updated by the server (rain, wind components).
-   */
   public void tickDecay() {
-    // decay rainfall slowly toward 0 so single messages don't persist forever
+    // decay rainfall slowly toward 0 
     rainfall = Math.max(0.0, rainfall - 0.001);
     // decay wind components
     windX = Math.max(0.0, windX - 0.002);

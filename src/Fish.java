@@ -9,7 +9,6 @@ public class Fish extends Actor {
 
   protected void setPoly() {
     display = new ArrayList<Polygon>();
-    // simple fish: body diamond shape + tail triangle
     Polygon body = new Polygon();
     body.addPoint(loc.x + 10, loc.y + 18);
     body.addPoint(loc.x + 17, loc.y + 12);
