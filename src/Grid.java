@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-public class Grid {
+public class Grid implements Iterable<Cell> {
   Cell[][] cells = new Cell[20][20];
   
   public Grid() {
@@ -159,5 +159,55 @@ public class Grid {
     for(Cell c: cells) {
       g.fillRect(c.x+2, c.y+2, c.width-4, c.height-4);
     }
+  }
+
+  // Iterator pattern: iterate all cells in row-major order
+  @Override
+  public java.util.Iterator<Cell> iterator() {
+    return new java.util.Iterator<Cell>() {
+      private int i = 0;
+      private int j = 0;
+      @Override
+      public boolean hasNext() {
+        return i < cells.length && j < cells[i].length;
+      }
+      @Override
+      public Cell next() {
+        Cell c = cells[i][j];
+        j++;
+        if (j >= cells[i].length) { j = 0; i++; }
+        return c;
+      }
+    };
+  }
+
+  // Iterator pattern: iterate a square region [minX..maxX] x [minY..maxY]
+  public Iterable<Cell> squareIterable(final int minX, final int minY, final int maxX, final int maxY) {
+    return new Iterable<Cell>() {
+      @Override
+      public java.util.Iterator<Cell> iterator() {
+        return new java.util.Iterator<Cell>() {
+          private int i = Math.max(0, minX);
+          private int j = Math.max(0, minY);
+          private final int iMax = Math.min(cells.length - 1, maxX);
+          private final int jMax = Math.min(cells[0].length - 1, maxY);
+          @Override
+          public boolean hasNext() {
+            return i <= iMax && j <= jMax;
+          }
+          @Override
+          public Cell next() {
+            Cell c = cells[i][j];
+            if (j < jMax) {
+              j++;
+            } else {
+              j = Math.max(0, minY);
+              i++;
+            }
+            return c;
+          }
+        };
+      }
+    };
   }
 }

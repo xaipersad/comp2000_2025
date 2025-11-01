@@ -2,14 +2,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class WeatherObserver {
+public class WeatherObserver implements WeatherListener {
     private Grid grid;
 
     public WeatherObserver(Grid grid) {
         this.grid = grid;
     }
 
+    // Backwards-compatible entry point
     public void processWeatherUpdate(String timestamp, String weatherType, int x, int y, double value) {
+        onWeatherUpdate(timestamp, weatherType, x, y, value);
+    }
+
+    @Override
+    public void onWeatherUpdate(String timestamp, String weatherType, int x, int y, double value) {
         // Convert server coordinates (origin J9) into grid indices
         int centerX = grid.serverToGridCol(x);
         int centerY = grid.serverToGridRow(y);
@@ -73,13 +79,8 @@ public class WeatherObserver {
             int maxX = Math.min(19, centerX + 2);
             int minY = Math.max(0, centerY - 2);
             int maxY = Math.min(19, centerY + 2);
-            for (int i = minX; i <= maxX; i++) {
-                for (int j = minY; j <= maxY; j++) {
-                    Optional<Cell> opt = grid.cellAtColRow(i, j);
-                    if (opt.isPresent()) {
-                        opt.get().updateWeather("wind", value);
-                    }
-                }
+            for (Cell c : grid.squareIterable(minX, minY, maxX, maxY)) {
+                c.updateWeather("wind", value);
             }
             return;
         }
@@ -89,15 +90,9 @@ public class WeatherObserver {
         int maxX = Math.min(19, centerX + 2);
         int minY = Math.max(0, centerY - 2);
         int maxY = Math.min(19, centerY + 2);
-        for (int i = minX; i <= maxX; i++) {
-            for (int j = minY; j <= maxY; j++) {
-                Optional<Cell> opt = grid.cellAtColRow(i, j);
-                if (opt.isPresent()) {
-                    Cell cell = opt.get();
-                    cell.updateWeather(weatherType, value);
-                    // do not immediately change terrain here; rely on gradual tick-based transitions
-                }
-            }
+        for (Cell cell : grid.squareIterable(minX, minY, maxX, maxY)) {
+            cell.updateWeather(weatherType, value);
+            // do not immediately change terrain here; rely on gradual tick-based transitions
         }
     }
 

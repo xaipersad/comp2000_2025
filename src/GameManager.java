@@ -2,10 +2,14 @@ public class GameManager {
     private static GameManager instance;
     private Grid grid;
     private WeatherObserver weatherObserver;
+    private WeatherEventBus weatherBus;
 
     private GameManager() {
         grid = new Grid();
         weatherObserver = new WeatherObserver(grid);
+        weatherBus = new WeatherEventBus();
+        // Register the observer with the bus (Observer pattern)
+        weatherBus.addListener(weatherObserver);
     }
 
     public static GameManager getInstance() {
@@ -21,5 +25,9 @@ public class GameManager {
 
     public WeatherObserver getWeatherObserver() {
         return weatherObserver;
+    }
+
+    public WeatherEventBus getWeatherBus() {
+        return weatherBus;
     }
 }

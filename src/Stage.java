@@ -13,6 +13,12 @@ public class Stage {
   // Game over flags
   private boolean gameOver = false;
   private boolean gameWon = false;
+  // End-screen context
+  private String actorReached3Name = null; // which actor (by class name) reached 3 points, if any
+  // Start screen
+  private boolean gameStarted = false;
+  private java.awt.Rectangle startPlayButtonRect = null;
+  private java.awt.Rectangle startQuitButtonRect = null;
   // End-screen buttons
   private java.awt.Rectangle restartButtonRect = null;
   private java.awt.Rectangle quitButtonRect = null;
@@ -32,6 +38,8 @@ public class Stage {
 
   GameState currentState;
   Beat beat;
+  // Decorator for drawing actors
+  private final ActorRenderer actorRenderer = new BotHighlightRenderer(new BaseActorRenderer());
 
   public Stage() {
     grid = GameManager.getInstance().getGrid();
@@ -50,9 +58,11 @@ public class Stage {
   }
 
   public void paint(Graphics g, Point mouseLoc) {
-    // Check win/lose conditions; if game is over, we will still render the grid
+    // Check win/lose conditions; if game is over or not yet started, we still render the grid
     // but skip updates and draw an overlay at the end.
-    checkGameOver();
+    if (gameStarted) {
+      checkGameOver();
+    }
     // Count human moves left (used for bot scheduling below)
     int humansWithMovesLeft = 0;
     if (currentState instanceof ChoosingActor) {
@@ -69,7 +79,7 @@ public class Stage {
     }
     // Run current state logic (may draw overlays or handle clicks)
     currentState.paint(g, this);
-    if (!gameOver) {
+    if (!gameOver && gameStarted) {
       // let the grid and its terrains update gradually each frame
       grid.tick();
       // remove any decorations whose terrain no longer matches their type
@@ -101,10 +111,12 @@ public class Stage {
 
     beat.ticktock();
     for(Actor player: listOfPlayers) {
-      player.paint(g);
+      actorRenderer.render(g, player);
     }
     draw_sidepanel(g, mouseLoc);
-    if (gameOver) {
+    if (!gameStarted) {
+      drawStartScreen(g);
+    } else if (gameOver) {
       drawGameOver(g);
     }
   }
@@ -120,19 +132,21 @@ public class Stage {
       }
     }
     if (theCat == null) return;
-    // Compute total points collected by all bots
-    int botPoints = 0;
+    // If any bot actor individually reaches 3 points, it's a loss and we record who reached 3.
     for (int i = 0; i < listOfPlayers.size(); i++) {
       Actor a = listOfPlayers.get(i);
-      if (a.isBot()) {
-        botPoints = botPoints + a.getPoints();
+      if (a.isBot() && a.getPoints() >= 3) {
+        actorReached3Name = a.getClass().getSimpleName();
+        gameOver = true;
+        gameWon = false;
+        return;
       }
     }
     // Lose has priority if multiple conditions happen simultaneously
-    if (theCat.getHealth() <= 0 || botPoints >= 3) {
+    if (theCat.getHealth() <= 0) {
       gameOver = true;
       gameWon = false;
-    } else if (theCat.getPoints() >= 3) {
+    } else if (theCat.getPoints() >= 5) {
       gameOver = true;
       gameWon = true;
     }
@@ -169,8 +183,10 @@ public class Stage {
     g.drawString(msg, cx, cy);
     g.setFont(subtitle);
     g.setColor(Color.WHITE);
-    if (gameWon) {
-      g.drawString("Collected 1 point.", cx - 10, cy + 40);
+    if (actorReached3Name != null) {
+      g.drawString(actorReached3Name + " reached 3 points.", cx - 30, cy + 40);
+    } else if (gameWon) {
+      g.drawString("Collected 5 points.", cx - 10, cy + 40);
     } else {
       g.drawString("Health reached 0.", cx - 5, cy + 40);
     }
@@ -495,6 +511,21 @@ public class Stage {
   }
 
   public void mouseClicked(int x, int y) {
+    if (!gameStarted) {
+      // Start screen buttons
+      if (startPlayButtonRect != null && startPlayButtonRect.contains(x, y)) {
+        gameStarted = true;
+        // Initialize timers to now
+        lastSpawnCheckMs = System.currentTimeMillis();
+        lastBotMoveMs = System.currentTimeMillis();
+        return;
+      }
+      if (startQuitButtonRect != null && startQuitButtonRect.contains(x, y)) {
+        System.exit(0);
+        return;
+      }
+      return; // ignore other clicks while on start screen
+    }
     if (gameOver) {
       // Allow clicks on buttons during game over
       if (restartButtonRect != null && restartButtonRect.contains(x, y)) {
@@ -514,6 +545,9 @@ public class Stage {
     // Clear game over flags and UI elements
     gameOver = false;
     gameWon = false;
+  actorReached3Name = null;
+    // Do not show start screen again on restart
+    gameStarted = true;
     restartButtonRect = null;
     quitButtonRect = null;
     // Reset players state: remove decorations, reset turns, reset points/health for Cat
@@ -552,6 +586,60 @@ public class Stage {
     lastBotMoveMs = System.currentTimeMillis();
   }
 
+  private void drawStartScreen(Graphics g) {
+    // Use same 10x10 centered overlay as end screen
+    int gridOriginX = 10;
+    int gridOriginY = 10;
+    int cell = Cell.size;
+    int rectX = gridOriginX + cell * 5; // start at col 5
+    int rectY = gridOriginY + cell * 5; // start at row 5
+    int rectW = cell * 10;
+    int rectH = cell * 10;
+
+    Color old = g.getColor();
+    g.setColor(new Color(0, 0, 0, 150));
+    g.fillRect(rectX, rectY, rectW, rectH);
+
+    // Title and subtitle
+    java.awt.Font oldFont = g.getFont();
+    java.awt.Font title = oldFont.deriveFont(java.awt.Font.BOLD, oldFont.getSize() + 24.0f);
+    java.awt.Font subtitle = oldFont.deriveFont(java.awt.Font.PLAIN, oldFont.getSize() + 10.0f);
+    g.setFont(title);
+    g.setColor(Color.WHITE);
+    String msg = "Start Game";
+    int cx = rectX + rectW / 2 - 90;
+    int cy = rectY + rectH / 2 - 25;
+    g.drawString(msg, cx, cy);
+    g.setFont(subtitle);
+    g.drawString("Collect 5 points to win.", cx - 25, cy + 40);
+
+    // Buttons: Play and Quit
+    int btnW = 140;
+    int btnH = 36;
+    int btnGap = 20;
+    int totalBtnsW = btnW * 2 + btnGap;
+    int btnStartX = rectX + (rectW - totalBtnsW) / 2;
+    int btnY = cy + 70;
+    // Play button
+    startPlayButtonRect = new java.awt.Rectangle(btnStartX, btnY, btnW, btnH);
+    g.setColor(new Color(255, 255, 255, 220));
+    g.fillRect(startPlayButtonRect.x, startPlayButtonRect.y, startPlayButtonRect.width, startPlayButtonRect.height);
+    g.setColor(Color.DARK_GRAY);
+    g.drawRect(startPlayButtonRect.x, startPlayButtonRect.y, startPlayButtonRect.width, startPlayButtonRect.height);
+    java.awt.Font btnFont = oldFont.deriveFont(java.awt.Font.BOLD, oldFont.getSize() + 6.0f);
+    g.setFont(btnFont);
+    g.drawString("Play", startPlayButtonRect.x + 48, startPlayButtonRect.y + 24);
+    // Quit button
+    startQuitButtonRect = new java.awt.Rectangle(btnStartX + btnW + btnGap, btnY, btnW, btnH);
+    g.setColor(new Color(255, 255, 255, 220));
+    g.fillRect(startQuitButtonRect.x, startQuitButtonRect.y, startQuitButtonRect.width, startQuitButtonRect.height);
+    g.setColor(Color.DARK_GRAY);
+    g.drawRect(startQuitButtonRect.x, startQuitButtonRect.y, startQuitButtonRect.width, startQuitButtonRect.height);
+    g.drawString("Quit", startQuitButtonRect.x + 48, startQuitButtonRect.y + 24);
+    g.setFont(oldFont);
+    g.setColor(old);
+  }
+
   // Move an actor and collect any decoration at the destination cell
   public void moveActorTo(Actor actor, Cell dest) {
     // track cat water movement for bubbles
@@ -569,9 +657,17 @@ public class Stage {
       }
       if (other.loc == dest) {
         if (other instanceof Tree || other instanceof Fish || other instanceof Cactus) {
-          // collect it: remove and add a point
+          // collect it: remove and add points based on object type
           listOfPlayers.remove(i);
-          actor.addPoint();
+          int delta = 0;
+          if (other instanceof Tree) {
+            delta = 1;
+          } else if (other instanceof Fish) {
+            delta = 2;
+          } else if (other instanceof Cactus) {
+            delta = 2;
+          }
+          actor.addPoints(delta);
           break;
         }
       }

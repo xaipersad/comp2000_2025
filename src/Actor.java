@@ -64,6 +64,9 @@ public abstract class Actor implements Pulse {
   public void addPoint() {
     points = points + 1;
   }
+  public void addPoints(int n) {
+    points = points + n;
+  }
 
   public void resetPoints() {
     points = 0;

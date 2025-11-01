@@ -38,9 +38,9 @@ public class Client {
                         int yPosition = Integer.parseInt(pieces[3]);
                         double weatherValue = Double.parseDouble(pieces[4]);
 
-                        // Send the weather update into the game so the grid visuals change
-                        GameManager.getInstance().getWeatherObserver()
-                            .processWeatherUpdate(timeStamp, weatherType, xPosition, yPosition, weatherValue);
+                        // Observer pattern: publish update to all listeners via the event bus
+                        GameManager.getInstance().getWeatherBus()
+                            .notifyUpdate(timeStamp, weatherType, xPosition, yPosition, weatherValue);
 
                         // also print for debugging
                         System.out.printf("Time: %s, %s at location (%d, %d) is %.2f%n",
