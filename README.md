@@ -54,7 +54,7 @@ Why this helps
 
 The `Client` connects to the provided server and reads a newline-delimited stream. Each line is expected to have five tokens:
 
-<timestamp> <weatherType> <x> <y> <value>
+`<timestamp> <weatherType> <x> <y> <value>`
 
 Example: `2025-11-02T12:00:01Z rainfall 2 -1 0.42`
 
